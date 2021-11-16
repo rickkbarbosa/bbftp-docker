@@ -11,14 +11,23 @@ RUN apt-get update && \
 RUN wget http://software.in2p3.fr/bbftp/dist/bbftp-server-3.2.1.tar.gz \
     -O /tmp/bbftp-server.tar.gz
 
+RUN wget http://software.in2p3.fr/bbftp/dist/bbftp-client-3.2.1.tar.gz \
+    -O /tmp/bbftp-client.tar.gz
+
 RUN tar xfz /tmp/bbftp-server.tar.gz -C /opt/
 RUN sed -i '1i #include <stdio.h>' /opt/bbftp-server-3.2.1/bbftpd/bbftpd_list.c  && \
     cd /opt/bbftp-server-3.2.1/bbftpd ; ./configure && make && make install
 
-RUN rm -rf /opt/bbftp-server-3.2.1
+RUN tar xvfz /tmp/bbftp-client.tar.gz -C /opt/
+RUN sed -i '1i #include <stdio.h>' /opt/bbftp-client-3.2.1/bbftpc/bbftp_list.c  && \
+    cd /opt/bbftp-client-3.2.1/bbftpc ; ./configure && make && make install
+
+RUN rm -rf /opt/bbftp-*
+
+RUN echo "root:123456789" | chpasswd
 
 RUN /usr/local/etc/bbftpd start
 
-CMD ["tail","-f","/dev/null"]
-
 EXPOSE 5021
+
+CMD ["tail","-f","/dev/null"]
